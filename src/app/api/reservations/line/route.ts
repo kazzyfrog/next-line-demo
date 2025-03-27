@@ -13,6 +13,13 @@ import { sendPushMessage } from "@/lib/line-messaging";
 //   picture: string;
 // }
 
+interface LineUserProfile {
+  userId: string; // ユーザーID（LINE内でユニーク）
+  displayName: string; // 表示名
+  pictureUrl?: string; // プロフィール画像URL（設定していない場合はなし）
+  statusMessage?: string; // ステータスメッセージ（設定していない場合はなし）
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -64,14 +71,14 @@ export async function POST(request: Request) {
       throw new Error("LINEプロフィールの取得に失敗しました");
     }
 
-    const lineUserInfo = await response.json();
+    const lineUserInfo: LineUserProfile = await response.json();
 
     // const lineUserInfo: LineVerifyResponse = await verifyResponse.json();
 
     // 予約の作成
     const reservation = await createReservation({
       name: body.name,
-      line_user_id: lineUserInfo.sub, // LINE User ID
+      line_user_id: lineUserInfo.userId, // LINE User ID
       desired_date: new Date(body.desired_date),
       content: body.content,
     });
@@ -81,7 +88,7 @@ export async function POST(request: Request) {
 
     // LINE Messaging APIを使って予約確認メッセージを送信
     const flexMessage = createReservationConfirmFlex(reservation);
-    await sendPushMessage(lineUserInfo.sub, [flexMessage]);
+    await sendPushMessage(lineUserInfo.userId, [flexMessage]);
 
     return NextResponse.json(reservation);
 

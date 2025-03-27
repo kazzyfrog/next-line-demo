@@ -6,13 +6,18 @@ import { initializeLiff, getLiffToken, closeLiff } from "@/lib/liff";
 // import { ja } from "date-fns/locale";
 
 export default function LiffReservationPage() {
+  // liffの初期化
   const [isLiffInitialized, setIsLiffInitialized] = useState(false);
+  // 初期ローディング
   const [isLoading, setIsLoading] = useState(true);
+  // 予約フォーム
   const [name, setName] = useState("");
   const [desiredDate, setDesiredDate] = useState("");
   const [content, setContent] = useState("");
+  // ユーザーへのメッセージ
   const [message, setMessage] = useState("");
 
+  // LIFFの初期化
   useEffect(() => {
     const initLiff = async () => {
       const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
@@ -31,6 +36,7 @@ export default function LiffReservationPage() {
     initLiff();
   }, []);
 
+  // 予約フォームの送信
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

@@ -31,13 +31,13 @@ export async function getReservations(): Promise<Reservation[]> {
   `;
 }
 
-// 特定のLINEユーザーIDの予約を取得
+// 特定のLINEユーザーIDの予約を取得（statusがconfirmed）
 export async function getReservationsByLineUserId(
   lineUserId: string
 ): Promise<Reservation[]> {
   return await sql<Reservation[]>`
     SELECT * FROM reservations
-    WHERE line_user_id = ${lineUserId}
+    WHERE line_user_id = ${lineUserId} AND status = 'confirmed'
     ORDER BY desired_date DESC
   `;
 }

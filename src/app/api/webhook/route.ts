@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/line-messaging";
 import {
   getReservationsByLineUserId,
   updateReservationStatus,
@@ -118,7 +119,8 @@ type Message = {
     actions: {
       type: string;
       label: string;
-      uri: string;
+      uri?: string;
+      text?: string;
     }[];
   };
 };
@@ -153,17 +155,24 @@ const sendReservationConfirmMessage = async (
 
   const reservation = reservations[0];
   if (reservation) {
+    const formattedDate = formatDateTime(new Date(reservation.desired_date));
     const message = {
-      type: "text",
-      text: `予約情報\n名前：${reservation.name}\n日時：${reservation.desired_date}\n内容：${reservation.content}`,
-      actions: [
-        {
-          type: "message",
-          label: "キャンセル",
-          text: "キャンセル確認",
-        },
-      ],
+      type: "template",
+      altText: "予約内容",
+      template: {
+        type: "buttons",
+        title: "予約内容",
+        text: `名前：${reservation.name}\n日時：${formattedDate}\n内容：${reservation.content}`,
+        actions: [
+          {
+            type: "message",
+            label: "キャンセル",
+            text: "キャンセル確認",
+          },
+        ],
+      },
     };
+
     await replyMessage(replyToken, [message]);
   } else {
     const message = {
@@ -176,16 +185,22 @@ const sendReservationConfirmMessage = async (
 
 const sendCancelMessage = async (replyToken: string) => {
   const message = {
-    type: "text",
-    text: "キャンセルを確定しますか?",
-    actions: [
-      {
-        type: "message",
-        label: "キャンセルを確定する",
-        text: "キャンセルを確定する",
-      },
-    ],
+    type: "template",
+    altText: "キャンセルを確定しますか?",
+    template: {
+      type: "buttons",
+      title: "キャンセルを確定しますか?",
+      text: `この処理は、取り消せません。`,
+      actions: [
+        {
+          type: "message",
+          label: "キャンセルを確定する",
+          text: "キャンセルを確定する",
+        },
+      ],
+    },
   };
+
   await replyMessage(replyToken, [message]);
 };
 

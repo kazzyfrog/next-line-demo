@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createReservation } from "@/lib/reservations";
 import { createReservationConfirmFlex } from "@/lib/flex-messages";
 import { sendPushMessage } from "@/lib/line-messaging";
+import { checkDuplicateReservation } from "@/lib/db";
 
 // interface LineVerifyResponse {
 //   iss: string;
@@ -74,6 +75,17 @@ export async function POST(request: Request) {
     const lineUserInfo: LineUserProfile = await response.json();
 
     // const lineUserInfo: LineVerifyResponse = await verifyResponse.json();
+
+    // 予約の重複チェック
+    const isDuplicate = await checkDuplicateReservation(
+      new Date(body.desired_date)
+    );
+    if (isDuplicate) {
+      return NextResponse.json(
+        { error: "同じ日時に予約があるので、別の日時を選択してください" },
+        { status: 400 }
+      );
+    }
 
     // 予約の作成
     const reservation = await createReservation({

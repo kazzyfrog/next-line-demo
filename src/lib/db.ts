@@ -34,6 +34,17 @@ export async function createReservation(data: {
   return reservation;
 }
 
+// 同じ日時に予約が入っていないかをチェック（stasusがconfirmedのもの）
+export async function checkDuplicateReservation(
+  desiredDate: Date
+): Promise<boolean> {
+  const [result] = await sql<{ count: number }[]>`
+    SELECT COUNT(*) AS count FROM reservations
+    WHERE desired_date = ${desiredDate} AND status = 'confirmed'
+  `;
+  return result.count > 0;
+}
+
 // 予約一覧を取得
 export async function getReservations(): Promise<Reservation[]> {
   return await sql<Reservation[]>`

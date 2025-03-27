@@ -1,10 +1,13 @@
 import { formatDateTime } from "./line-messaging";
 import type { Reservation } from "./db";
+import { messagingApi } from "@line/bot-sdk";
 
 /**
  * 予約確認用Flex Messageテンプレートを生成
  */
-export function createReservationConfirmFlex(reservation: Reservation) {
+export function createReservationConfirmFlex(
+  reservation: Reservation
+): messagingApi.FlexMessage {
   const formattedDate = formatDateTime(new Date(reservation.desired_date));
 
   return {
@@ -134,20 +137,11 @@ export function createReservationConfirmFlex(reservation: Reservation) {
         contents: [
           {
             type: "button",
-            style: "primary",
-            action: {
-              type: "uri",
-              label: "予約を変更する",
-              uri: `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}`,
-            },
-          },
-          {
-            type: "button",
             style: "secondary",
             action: {
-              type: "uri",
-              label: "ウェブサイトを見る",
-              uri: process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
+              type: "message",
+              label: "予約を取り消す",
+              text: "キャンセル確認",
             },
           },
         ],

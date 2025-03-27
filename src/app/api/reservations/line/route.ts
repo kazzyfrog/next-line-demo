@@ -4,16 +4,6 @@ import { createReservationConfirmFlex } from "@/lib/flex-messages";
 import { sendPushMessage } from "@/lib/line-messaging";
 import { checkDuplicateReservation } from "@/lib/db";
 
-// interface LineVerifyResponse {
-//   iss: string;
-//   sub: string;
-//   aud: string;
-//   exp: number;
-//   iat: number;
-//   name: string;
-//   picture: string;
-// }
-
 interface LineUserProfile {
   userId: string; // ユーザーID（LINE内でユニーク）
   displayName: string; // 表示名
@@ -32,21 +22,6 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    // IDトークンの検証
-    // const verifyResponse = await fetch(
-    //   "https://api.line.me/oauth2/v2.1/verify",
-    //   {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/x-www-form-urlencoded",
-    //     },
-    //     body: new URLSearchParams({
-    //       id_token: body.id_token,
-    //       client_id: process.env.LIFF_CHANNEL_ID || "",
-    //     }).toString(),
-    //   }
-    // );
 
     const verifyResponse = await fetch(
       `https://api.line.me/oauth2/v2.1/verify?access_token=${body.id_token}`,

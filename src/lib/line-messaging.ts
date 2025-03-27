@@ -1,50 +1,19 @@
-type Message = {
-  type: string;
-  text?: string;
-  altText?: string;
-  template?: {
-    type: string;
-    title: string;
-    text: string;
-    actions: {
-      type: string;
-      label: string;
-      uri: string;
-    }[];
-  };
-};
+import { messagingApi } from "@line/bot-sdk";
+import { lineClient } from "./line-bot/client";
 
 /**
  * LINE Messaging APIを使用するためのヘルパー関数
  */
 
-// プッシュメッセージを送信（特定ユーザーへ）
 export async function sendPushMessage(
   userId: string,
-  messages: Message[]
+  messages: messagingApi.Message[]
 ): Promise<boolean> {
-  const url = "https://api.line.me/v2/bot/message/push";
-  const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || "";
-
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify({
-        to: userId,
-        messages,
-      }),
+    await lineClient.pushMessage({
+      to: userId,
+      messages: messages,
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("LINE API error:", errorData);
-      return false;
-    }
-
     return true;
   } catch (error) {
     console.error("Failed to send LINE message:", error);

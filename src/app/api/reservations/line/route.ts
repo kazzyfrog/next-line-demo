@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { createReservation } from "@/lib/reservations";
-import { createReservationConfirmFlex } from "@/lib/flex-messages";
-import { sendPushMessage } from "@/lib/line-messaging";
-import { checkDuplicateReservation } from "@/lib/db";
+import { lineClient } from "@/lib/line-bot/client";
+import { createReservationConfirmFlex } from "@/lib/line-bot/flex-messages";
+import {
+  checkDuplicateReservation,
+  createReservation,
+} from "@/lib/neon/reservations";
 
 interface LineUserProfile {
   userId: string; // ユーザーID（LINE内でユニーク）
@@ -49,8 +51,6 @@ export async function POST(request: Request) {
 
     const lineUserInfo: LineUserProfile = await response.json();
 
-    // const lineUserInfo: LineVerifyResponse = await verifyResponse.json();
-
     // 予約の重複チェック
     const isDuplicate = await checkDuplicateReservation(
       new Date(body.desired_date)
@@ -70,16 +70,16 @@ export async function POST(request: Request) {
       content: body.content,
     });
 
-    // LINE Messaging APIを使って予約確認メッセージを送信
-    // (このステップは次の「簡易的な予約フロー」で実装)
+    // Flex Messageを作成
+    const flexMessage = createReservationConfirmFlex(reservation);
 
     // LINE Messaging APIを使って予約確認メッセージを送信
-    const flexMessage = createReservationConfirmFlex(reservation);
-    await sendPushMessage(lineUserInfo.userId, [flexMessage]);
+    await lineClient.pushMessage({
+      to: lineUserInfo.userId,
+      messages: [flexMessage],
+    });
 
     return NextResponse.json(reservation);
-
-    // return NextResponse.json(reservation);
   } catch (error) {
     console.error("予約作成エラー:", error);
     return NextResponse.json(

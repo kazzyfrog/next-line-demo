@@ -1,9 +1,7 @@
 "use client";
 
+import { closeLiff, getLiffToken, initializeLiff } from "@/lib/liff/utils";
 import { useState, useEffect } from "react";
-import { initializeLiff, getLiffToken, closeLiff } from "@/lib/liff";
-// import { format } from "date-fns";
-// import { ja } from "date-fns/locale";
 
 export default function LiffReservationPage() {
   // liffの初期化
@@ -17,7 +15,7 @@ export default function LiffReservationPage() {
   // ユーザーへのメッセージ
   const [message, setMessage] = useState("");
 
-  // LIFFの初期化
+  // LIFFの初期化（ライン上からのアクセスかどうか）
   useEffect(() => {
     const initLiff = async () => {
       const liffId = process.env.NEXT_PUBLIC_LIFF_ID;

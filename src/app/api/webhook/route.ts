@@ -3,11 +3,11 @@ import {
   lineClient,
   verifySignature,
 } from "@/lib/line-bot/client";
-import { formatDateTime } from "@/lib/line-messaging";
+import { formatDateTime } from "@/lib/line-bot/flex-messages";
 import {
   getReservationsByLineUserId,
   updateReservationStatus,
-} from "@/lib/reservations";
+} from "@/lib/neon/reservations";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {

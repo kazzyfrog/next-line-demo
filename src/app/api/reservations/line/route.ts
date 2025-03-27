@@ -3,15 +3,15 @@ import { createReservation } from "@/lib/reservations";
 import { createReservationConfirmFlex } from "@/lib/flex-messages";
 import { sendPushMessage } from "@/lib/line-messaging";
 
-interface LineVerifyResponse {
-  iss: string;
-  sub: string;
-  aud: string;
-  exp: number;
-  iat: number;
-  name: string;
-  picture: string;
-}
+// interface LineVerifyResponse {
+//   iss: string;
+//   sub: string;
+//   aud: string;
+//   exp: number;
+//   iat: number;
+//   name: string;
+//   picture: string;
+// }
 
 export async function POST(request: Request) {
   try {
@@ -26,17 +26,24 @@ export async function POST(request: Request) {
     }
 
     // IDトークンの検証
+    // const verifyResponse = await fetch(
+    //   "https://api.line.me/oauth2/v2.1/verify",
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/x-www-form-urlencoded",
+    //     },
+    //     body: new URLSearchParams({
+    //       id_token: body.id_token,
+    //       client_id: process.env.LIFF_CHANNEL_ID || "",
+    //     }).toString(),
+    //   }
+    // );
+
     const verifyResponse = await fetch(
-      "https://api.line.me/oauth2/v2.1/verify",
+      `https://api.line.me/oauth2/v2.1/verify?access_token=${body.id_token}`,
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          id_token: body.id_token,
-          client_id: process.env.LIFF_CHANNEL_ID || "",
-        }).toString(),
+        method: "GET",
       }
     );
 
@@ -47,7 +54,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const lineUserInfo: LineVerifyResponse = await verifyResponse.json();
+    const response = await fetch("https://api.line.me/v2/profile", {
+      headers: {
+        Authorization: `Bearer ${body.id_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("LINEプロフィールの取得に失敗しました");
+    }
+
+    const lineUserInfo = await response.json();
+
+    // const lineUserInfo: LineVerifyResponse = await verifyResponse.json();
 
     // 予約の作成
     const reservation = await createReservation({

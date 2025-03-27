@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get("x-line-signature") || "";
 
   // 署名検証
-  if (!verifySignature(signature, body)) {
+  if (!verifySignature(body, signature)) {
     return new Response("Invalid signature", { status: 401 });
   }
 

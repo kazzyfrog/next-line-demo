@@ -143,15 +143,43 @@ export default function LiffReservationPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            希望日時
+            希望日
           </label>
           <input
-            type="datetime-local"
-            value={desiredDate}
-            onChange={(e) => setDesiredDate(e.target.value)}
+            type="date"
+            value={desiredDate.split("T")[0]}
+            onChange={(e) => {
+              const time = desiredDate.split("T")[1] || "10:00";
+              setDesiredDate(`${e.target.value}T${time}`);
+            }}
             required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            希望時間
+          </label>
+          <select
+            value={desiredDate.split("T")[1] || "10:00"}
+            onChange={(e) => {
+              const date = desiredDate.split("T")[0];
+              setDesiredDate(`${date}T${e.target.value}`);
+            }}
+            required
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          >
+            {/* 10:00から20:00まで1時間ごとの選択肢をmapで生成 */}
+            {Array.from({ length: 11 }, (_, i) => i + 10).map((hour) => {
+              const timeValue = `${hour.toString().padStart(2, "0")}:00`;
+              return (
+                <option key={timeValue} value={timeValue}>
+                  {timeValue}
+                </option>
+              );
+            })}
+          </select>
         </div>
 
         <div>

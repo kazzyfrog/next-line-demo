@@ -41,22 +41,22 @@ export async function POST(request: NextRequest) {
             if (event.message.text === "カウンセリングを予約する") {
               // LIFFアプリへのリンクを送信
               await sendLiffLink(event.replyToken);
+            } else if (event.message.text === "予約確認") {
+              // 予約確認メッセージの処理
+              await sendReservationConfirmMessage(
+                event.replyToken,
+                event.source.userId
+              );
+            } else if (event.message.text === "キャンセル確認") {
+              // キャンセルメッセージの処理
+              await sendCancelMessage(event.replyToken);
+            } else if (event.message.text === "キャンセルを確定する") {
+              // キャンセルメッセージの処理
+              await sendCancelConfirmMessage(
+                event.replyToken,
+                event.source.userId
+              );
             }
-          } else if (event.message.type === "予約確認") {
-            // 予約確認メッセージの処理
-            await sendReservationConfirmMessage(
-              event.replyToken,
-              event.source.userId
-            );
-          } else if (event.message.type === "キャンセル確認") {
-            // キャンセルメッセージの処理
-            await sendCancelMessage(event.replyToken);
-          } else if (event.message.type === "キャンセルを確定する") {
-            // キャンセルメッセージの処理
-            await sendCancelConfirmMessage(
-              event.replyToken,
-              event.source.userId
-            );
           }
           break;
         case "follow":

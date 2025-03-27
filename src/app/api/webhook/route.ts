@@ -1,3 +1,7 @@
+import {
+  getReservationsByLineUserId,
+  updateReservationStatus,
+} from "@/lib/reservations";
 import crypto from "crypto";
 import { NextRequest } from "next/server";
 
@@ -38,6 +42,21 @@ export async function POST(request: NextRequest) {
               // LIFFアプリへのリンクを送信
               await sendLiffLink(event.replyToken);
             }
+          } else if (event.message.type === "予約確認") {
+            // 予約確認メッセージの処理
+            await sendReservationConfirmMessage(
+              event.replyToken,
+              event.source.userId
+            );
+          } else if (event.message.type === "キャンセル確認") {
+            // キャンセルメッセージの処理
+            await sendCancelMessage(event.replyToken);
+          } else if (event.message.type === "キャンセルを確定する") {
+            // キャンセルメッセージの処理
+            await sendCancelConfirmMessage(
+              event.replyToken,
+              event.source.userId
+            );
           }
           break;
         case "follow":
@@ -54,7 +73,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// LIFF予約フォームへのリンクを送信
+// LIFF予約フォームへのリンクを送信（これくらいシンプルでいいね！）
 async function sendLiffLink(replyToken: string) {
   const liffUrl = process.env.NEXT_PUBLIC_LIFF_URL || "";
 
@@ -123,3 +142,72 @@ async function replyMessage(replyToken: string, messages: Message[]) {
 
   return response;
 }
+
+// ユーザー情報を取得し、予約詳細を確認。DBから予約を取得。見つからなければ、「予約情報が見つかりませんでした。」と返す
+// actionsにキャンセルボタンを設置
+const sendReservationConfirmMessage = async (
+  replyToken: string,
+  userId: string
+) => {
+  const reservations = await getReservationsByLineUserId(userId);
+
+  const reservation = reservations[0];
+  if (reservation) {
+    const message = {
+      type: "text",
+      text: `予約情報\n名前：${reservation.name}\n日時：${reservation.desired_date}\n内容：${reservation.content}`,
+      actions: [
+        {
+          type: "message",
+          label: "キャンセル",
+          text: "キャンセル確認",
+        },
+      ],
+    };
+    await replyMessage(replyToken, [message]);
+  } else {
+    const message = {
+      type: "text",
+      text: "予約情報が見つかりませんでした。",
+    };
+    await replyMessage(replyToken, [message]);
+  }
+};
+
+const sendCancelMessage = async (replyToken: string) => {
+  const message = {
+    type: "text",
+    text: "キャンセルを確定しますか?",
+    actions: [
+      {
+        type: "message",
+        label: "キャンセルを確定する",
+        text: "キャンセルを確定する",
+      },
+    ],
+  };
+  await replyMessage(replyToken, [message]);
+};
+
+// ユーザー情報を取得し、DBから予約を削除。見つからなければ、「予約情報が見つかりませんでした。」と返す
+const sendCancelConfirmMessage = async (replyToken: string, userId: string) => {
+  const reservations = await getReservationsByLineUserId(userId);
+
+  const reservation = reservations[0];
+  // 見つからなければ、「予約情報が見つかりませんでした。」と返す
+  if (!reservation) {
+    const message = {
+      type: "text",
+      text: "予約情報が見つかりませんでした。",
+    };
+    await replyMessage(replyToken, [message]);
+    return;
+  }
+  // 見つかった場合は、DBから予約を削除（stasusをcancelledに変更）
+  await updateReservationStatus(reservation.id, "cancelled");
+  const message = {
+    type: "text",
+    text: "予約をキャンセルしました",
+  };
+  await replyMessage(replyToken, [message]);
+};

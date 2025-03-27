@@ -166,7 +166,7 @@ const sendReservationConfirmMessage = async (
         actions: [
           {
             type: "message",
-            label: "キャンセル",
+            label: "キャンセルしますか？",
             text: "キャンセル確認",
           },
         ],
@@ -222,7 +222,7 @@ const sendCancelConfirmMessage = async (replyToken: string, userId: string) => {
   await updateReservationStatus(reservation.id, "cancelled");
   const message = {
     type: "text",
-    text: "予約をキャンセルしました",
+    text: "予約をキャンセルしました。\nまたのご予約をお待ちしております。",
   };
   await replyMessage(replyToken, [message]);
 };

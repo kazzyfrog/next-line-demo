@@ -1,16 +1,20 @@
-// import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { NextRequest } from "next/server";
 
 const LINE_CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET || "";
 
+if (!LINE_CHANNEL_SECRET) {
+  throw new Error("LINE_CHANNEL_SECRET environment variable is not defined");
+}
+
 // LINE署名の検証
 function validateSignature(signature: string, body: string): boolean {
-  const hmac = crypto.createHmac("sha256", LINE_CHANNEL_SECRET);
+  const hmac = crypto.createHmac("SHA256", LINE_CHANNEL_SECRET);
   const digest = hmac.update(body).digest("base64");
   return signature === digest;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   // リクエストボディの取得
   const body = await request.text();
   const signature = request.headers.get("x-line-signature") || "";

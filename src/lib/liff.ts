@@ -38,7 +38,8 @@ export function getLiffToken() {
   }
 
   try {
-    const idToken = liff.getIDToken();
+    //
+    const idToken = liff.getAccessToken();
     return idToken;
   } catch (error) {
     console.error("Error getting LIFF token", error);
